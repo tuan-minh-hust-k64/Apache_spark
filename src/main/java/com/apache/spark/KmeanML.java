@@ -1,6 +1,5 @@
 package com.apache.spark;
 
-import com.google.cloud.spark.bigquery.BigQueryRelationProvider;
 import org.apache.spark.ml.recommendation.ALS;
 import org.apache.spark.ml.recommendation.ALSModel;
 import org.apache.spark.sql.Dataset;
@@ -17,9 +16,9 @@ public class KmeanML {
                 .config("spark.jars", "https://storage.cloud.google.com/spark-lib/bigquery/spark-bigquery-latest.jar")
                 .getOrCreate();
         sparkSession.conf().set("credentialsFile", "src/main/resources/bigquery.json");
-        Dataset<Row> dataset = sparkSession.read().format("com.google.cloud.spark.bigquery").option("table","ikame-ltv-predict.ltv_prediction.ltv_data_training_test")
+        Dataset<Row> dataset = sparkSession.read().format("bigquery").option("table","ikame-ltv-predict.ltv_prediction.ltv_data_training_test")
                 .load();
-        dataset.printSchema();
+        dataset.show(1);
 //        Dataset<Row> rawData = sparkSession.read().option("header", true).option("inferSchema", true)
 //                .csv("src/main/resources/VPPcourseViews.csv");
 //        rawData = rawData.withColumn("rate", col("proportionWatched").multiply(100)).drop("proportionWatched");
