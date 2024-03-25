@@ -12,15 +12,19 @@ import static org.apache.spark.sql.functions.*;
 
 public class KmeanML {
     public static void main(String[] args) {
-        SparkSession sparkSession = SparkSession.builder().appName("Spark ML").master("local[*]")
+        SparkSession sparkSession = SparkSession.builder().appName("Spark ML")
                 .config("spark.sql.warehouse.dir", "file:///c:/tmp/")
-                .config("spark.jars", "https://storage.cloud.google.com/spark-lib/bigquery/spark-bigquery-latest.jar")
+                .config("spark.jars", "https://storage.cloud.google.com/spark-lib/bigquery/spark-bigquery-latest.jar,https://storage.cloud.google.com/spark-lib/bigquery/spark-bigquery-with-dependencies_2.12-0.36.1.jar")
+                .config("spark.jars.packages", "com.google.cloud.spark:spark-3.5-bigquery:0.36.1")
+//                .config("parentProject", "ikame-ltv-predict")
                 .getOrCreate();
-        sparkSession.conf().set("credentialsFile", "src/main/resources/bigquery.json");
-        Dataset<Row> dataset = sparkSession.read().format("bigquery").option("table","ikame-ltv-predict.ltv_prediction.ltv_data_training_test")
+        sparkSession.conf().set("credentialsFile", "/opt/bitnami/spark/test.json");
+        Dataset<Row> dataset = sparkSession.read().format("bigquery")
+                .option("table","bigquery-public-data.usa_names.usa_1910_2013")
                 .load();
-        dataset.write().format("bigquery").option("writeMethod", "direct")
-                .mode(SaveMode.Append).save("ikame-ltv-predict.ltv_prediction.ltv_data_training_test");
+        dataset.show(1);
+//        dataset.write().format("bigquery").option("writeMethod", "direct")
+//                .mode(SaveMode.Append).save("ikame-ltv-predict.ltv_prediction.cast_glitter_input_data");
 //        Dataset<Row> rawData = sparkSession.read().option("header", true).option("inferSchema", true)
 //                .csv("src/main/resources/VPPcourseViews.csv");
 //        rawData = rawData.withColumn("rate", col("proportionWatched").multiply(100)).drop("proportionWatched");
