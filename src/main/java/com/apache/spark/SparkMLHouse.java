@@ -24,7 +24,7 @@ public class SparkMLHouse {
                 .load();
         mlData = processData(mlData, "ltv_total");
         mlData.write().format("bigquery").option("writeMethod", "direct")
-                .mode(SaveMode.Append).save("ikame-ltv-predict.ltv_prediction.Pdf_Reader_2_input_data_traning_total");
+                .mode(SaveMode.Overwrite).save("ikame-ltv-predict.ltv_prediction.Pdf_Reader_2_input_data_traning_ltv_total");
         System.out.println(ZonedDateTime.now(ZoneId.of("UTC")));
 
     }
@@ -43,9 +43,6 @@ public class SparkMLHouse {
                 .withColumn("snapshot_ts_day_of_week", regexp_replace(col("snapshot_ts_day_of_week"), "D", "").cast(DataTypes.FloatType))
                 .withColumn("snapshot_ts_week_of_year", regexp_replace(col("snapshot_ts_week_of_year"), "W", "").cast(DataTypes.FloatType))
                 .withColumn("snapshot_ts_month_of_year", regexp_replace(col("snapshot_ts_month_of_year"), "M", "").cast(DataTypes.FloatType))
-                .withColumn("mode__event__in_app_purchase__subscription__int_value",
-                        when(col("mode__event__in_app_purchase__subscription__int_value").isNull(), 0)
-                                .otherwise(col("mode__event__in_app_purchase__subscription__int_value")))
                 .withColumn(filterBy + "_d0_feature", when(col("snapshot_ts_day_of_week").$greater$eq(1), col(filterBy + "_d0")).otherwise(null))
                 .withColumn(filterBy + "_d1_feature", when(col("snapshot_ts_day_of_week").$greater$eq(2), col(filterBy + "_d1")).otherwise(null))
                 .withColumn(filterBy + "_d2_feature", when(col("snapshot_ts_day_of_week").$greater$eq(3), col(filterBy + "_d2")).otherwise(null))
@@ -56,26 +53,29 @@ public class SparkMLHouse {
         ;
         StringIndexer stringIndexer = new StringIndexer();
         mlData = stringIndexer.setInputCols(new String[] {
-                "mode__event__ad_track__action_name__string_value",
-                "mode__event__ad_track__status_result__string_value",
-                "mode__event__ad_track__status_internet__string_value",
-                "mode__event__ad_track__status_Ad_position__string_value",
-                "mode__event__paid_ad_impression_all__ad_format__string_value",
-                "mode__event_name"
+                "mode_event_ad_track_action_name_string_value",
+                "mode_event_ad_track_status_result_string_value",
+                "mode_event_ad_track_status_internet_string_value",
+                "mode_event_ad_track_status_Ad_position_string_value",
+                "mode_event_paid_ad_impression_all_ad_format_string_value",
+                "mode_event_name",
+                "mode_event_in_app_purchase_subscription_int_value"
         }).setOutputCols(new String[] {
-                "mode__event__ad_track__action_name__string_value_index",
-                "mode__event__ad_track__status_result__string_value_index",
-                "mode__event__ad_track__status_internet__string_value_index",
-                "mode__event__ad_track__status_Ad_position__string_value_index",
-                "mode__event__paid_ad_impression_all__ad_format__string_value_index",
-                "mode__event_name_index"
+                "mode_event_ad_track_action_name_string_value_index",
+                "mode_event_ad_track_status_result_string_value_index",
+                "mode_event_ad_track_status_internet_string_value_index",
+                "mode_event_ad_track_status_Ad_position_string_value_index",
+                "mode_event_paid_ad_impression_all_ad_format_string_value_index",
+                "mode_event_name_index",
+                "mode_event_in_app_purchase_subscription_int_value_index"
         }).setHandleInvalid("keep").fit(mlData).transform(mlData);
-        mlData = mlData.drop("mode__event__ad_track__action_name__string_value",
-                "mode__event__ad_track__status_result__string_value",
-                "mode__event__ad_track__status_internet__string_value",
-                "mode__event__ad_track__status_Ad_position__string_value",
-                "mode__event__paid_ad_impression_all__ad_format__string_value",
-                "mode__event_name");
+        mlData = mlData.drop("mode_event_ad_track_action_name_string_value",
+                "mode_event_ad_track_status_result_string_value",
+                "mode_event_ad_track_status_internet_string_value",
+                "mode_event_ad_track_status_Ad_position_string_value",
+                "mode_event_paid_ad_impression_all_ad_format_string_value",
+                "mode_event_name",
+                "mode_event_in_app_purchase_subscription_int_value");
         return mlData;
     }
 }
